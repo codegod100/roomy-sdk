@@ -1,0 +1,416 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Entity-Component Relationship Diagram</title>
+<style>
+  body { font-family: sans-serif; background: #f9f9f9; margin: 0; padding: 0; }
+  svg { width: 100%; height: 100vh; background: #fff; border: 1px solid #ccc; }
+  .entity { stroke: #333; stroke-width: 2; fill: #e0f7fa; rx: 10; ry: 10; }
+  .component-slot { stroke: #666; stroke-width: 1.5; fill: #fff; rx: 5; ry: 5; }
+  .label { font-size: 12px; text-anchor: middle; dominant-baseline: middle; pointer-events: none; }
+  .arrow { stroke-width: 1.5; fill: none; }
+</style>
+</head>
+<body>
+<svg id="diagram"></svg>
+<script>
+const diagramData = [
+  {
+    "id": "Space",
+    "label": "Space",
+    "x": 150,
+    "y": 100,
+    "components": [
+      {
+        "name": "Channels",
+        "linksTo": [
+          "Channel"
+        ]
+      },
+      {
+        "name": "Threads",
+        "linksTo": [
+          "Thread"
+        ]
+      },
+      {
+        "name": "WikiPages",
+        "linksTo": [
+          "WikiPage"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "Category",
+    "label": "Category",
+    "x": 150,
+    "y": 350,
+    "components": [
+      {
+        "name": "Channels",
+        "linksTo": [
+          "Channel"
+        ]
+      },
+      {
+        "name": "Category",
+        "linksTo": []
+      }
+    ]
+  },
+  {
+    "id": "Channel",
+    "label": "Channel",
+    "x": 400,
+    "y": 350,
+    "components": [
+      {
+        "name": "Threads",
+        "linksTo": [
+          "Thread"
+        ]
+      },
+      {
+        "name": "WikiPages",
+        "linksTo": [
+          "WikiPage"
+        ]
+      },
+      {
+        "name": "Channel",
+        "linksTo": []
+      }
+    ]
+  },
+  {
+    "id": "WikiPage",
+    "label": "WikiPage",
+    "x": 150,
+    "y": 600,
+    "components": [
+      {
+        "name": "Content",
+        "linksTo": []
+      },
+      {
+        "name": "JsonContent",
+        "linksTo": []
+      },
+      {
+        "name": "WikiPage",
+        "linksTo": []
+      }
+    ]
+  },
+  {
+    "id": "Thread",
+    "label": "Thread",
+    "x": 400,
+    "y": 600,
+    "components": [
+      {
+        "name": "Thread",
+        "linksTo": []
+      }
+    ]
+  },
+  {
+    "id": "TimelineItem",
+    "label": "TimelineItem",
+    "x": 150,
+    "y": 850,
+    "components": [
+      {
+        "name": "ReplyTo",
+        "linksTo": [
+          "Message"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "Message",
+    "label": "Message",
+    "x": 400,
+    "y": 850,
+    "components": [
+      {
+        "name": "Images",
+        "linksTo": [
+          "Image"
+        ]
+      },
+      {
+        "name": "AuthorUris",
+        "linksTo": []
+      },
+      {
+        "name": "Content",
+        "linksTo": []
+      },
+      {
+        "name": "JsonContent",
+        "linksTo": []
+      },
+      {
+        "name": "Message",
+        "linksTo": []
+      }
+    ]
+  },
+  {
+    "id": "Announcement",
+    "label": "Announcement",
+    "x": 650,
+    "y": 850,
+    "components": [
+      {
+        "name": "Threads",
+        "linksTo": [
+          "Thread"
+        ]
+      },
+      {
+        "name": "Timeline",
+        "linksTo": [
+          "TimelineItem",
+          "Message"
+        ]
+      },
+      {
+        "name": "ChannelAnnouncement",
+        "linksTo": []
+      }
+    ]
+  },
+  {
+    "id": "Reactions",
+    "label": "Reactions",
+    "x": 150,
+    "y": 1100,
+    "components": [
+      {
+        "name": "Reactions",
+        "linksTo": []
+      }
+    ]
+  },
+  {
+    "id": "Image",
+    "label": "Image",
+    "x": 400,
+    "y": 1100,
+    "components": [
+      {
+        "name": "ImageUri",
+        "linksTo": []
+      }
+    ]
+  },
+  {
+    "id": "HasPeer",
+    "label": "HasPeer",
+    "x": 150,
+    "y": 1350,
+    "components": []
+  },
+  {
+    "id": "EntityWrapper",
+    "label": "EntityWrapper",
+    "x": 400,
+    "y": 1350,
+    "components": []
+  },
+  {
+    "id": "Deletable",
+    "label": "Deletable",
+    "x": 650,
+    "y": 1350,
+    "components": [
+      {
+        "name": "SoftDeleted",
+        "linksTo": []
+      }
+    ]
+  },
+  {
+    "id": "Administered",
+    "label": "Administered",
+    "x": 900,
+    "y": 1350,
+    "components": [
+      {
+        "name": "Admins",
+        "linksTo": []
+      }
+    ]
+  },
+  {
+    "id": "NamedEntity",
+    "label": "NamedEntity",
+    "x": 1150,
+    "y": 1350,
+    "components": [
+      {
+        "name": "BasicMeta",
+        "linksTo": []
+      },
+      {
+        "name": "Handles",
+        "linksTo": []
+      }
+    ]
+  },
+  {
+    "id": "EntityList",
+    "label": "EntityList",
+    "x": 1400,
+    "y": 1350,
+    "components": []
+  },
+  {
+    "id": "Content",
+    "label": "Content",
+    "x": 1650,
+    "y": 1350,
+    "components": [
+      {
+        "name": "Content",
+        "linksTo": []
+      },
+      {
+        "name": "JsonContent",
+        "linksTo": []
+      }
+    ]
+  },
+  {
+    "id": "Roomy",
+    "label": "Roomy",
+    "x": 1900,
+    "y": 1350,
+    "components": [
+      {
+        "name": "Spaces",
+        "linksTo": []
+      }
+    ]
+  },
+  {
+    "id": "Timeline",
+    "label": "Timeline",
+    "x": 2150,
+    "y": 1350,
+    "components": [
+      {
+        "name": "Timeline",
+        "linksTo": [
+          "TimelineItem",
+          "Message",
+          "Announcement"
+        ]
+      }
+    ]
+  }
+];
+
+(function drawEcsDiagram(svgOrSelector, entities, options = {}) {
+  const svg = typeof svgOrSelector === "string" ? document.querySelector(svgOrSelector) : svgOrSelector;
+  if (!svg)
+    throw new Error("SVG element not found");
+  svg.innerHTML = "";
+  const colorMap = options.colorMap || {
+    Channels: "#2196f3",
+    SidebarItems: "#009688",
+    Threads: "#ff9800",
+    Timeline: "#9c27b0",
+    ReplyTo: "#f44336",
+    Images: "#4caf50"
+  }, defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+  Object.entries(colorMap).forEach(([key, color]) => {
+    const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+    marker.setAttribute("id", `arrowhead-${key}`);
+    marker.setAttribute("markerWidth", "10");
+    marker.setAttribute("markerHeight", "7");
+    marker.setAttribute("refX", "10");
+    marker.setAttribute("refY", "3.5");
+    marker.setAttribute("orient", "auto");
+    marker.setAttribute("markerUnits", "strokeWidth");
+    marker.innerHTML = `<polygon points="0 0, 10 3.5, 0 7" fill="${color}" />`;
+    defs.appendChild(marker);
+  });
+  svg.appendChild(defs);
+  let minX = 1 / 0, minY = 1 / 0, maxX = -1 / 0, maxY = -1 / 0;
+  entities.forEach((ent) => {
+    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.setAttribute("transform", `translate(${ent.x}, ${ent.y})`);
+    const width = 110, height = 50 + ent.components.length * 25;
+    minX = Math.min(minX, ent.x - width / 2 - 20);
+    maxX = Math.max(maxX, ent.x + width / 2 + 20);
+    minY = Math.min(minY, ent.y - height / 2 - 20);
+    maxY = Math.max(maxY, ent.y + height / 2 + 20);
+    const entityBox = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    entityBox.setAttribute("x", -width / 2);
+    entityBox.setAttribute("y", -height / 2);
+    entityBox.setAttribute("width", width);
+    entityBox.setAttribute("height", height);
+    entityBox.setAttribute("class", "entity");
+    group.appendChild(entityBox);
+    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    label.setAttribute("class", "label");
+    label.setAttribute("x", 0);
+    label.setAttribute("y", -height / 2 + 15);
+    label.textContent = ent.label;
+    group.appendChild(label);
+    ent.components.forEach((comp, idx) => {
+      const slotWidth = width - 20, slotX = -slotWidth / 2, slotY = -height / 2 + 30 + idx * 25, slot = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      slot.setAttribute("x", slotX);
+      slot.setAttribute("y", slotY);
+      slot.setAttribute("width", slotWidth);
+      slot.setAttribute("height", 20);
+      slot.setAttribute("class", "component-slot");
+      group.appendChild(slot);
+      const slotLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      slotLabel.setAttribute("class", "label");
+      slotLabel.setAttribute("x", 0);
+      slotLabel.setAttribute("y", slotY + 10);
+      slotLabel.textContent = comp.name;
+      group.appendChild(slotLabel);
+      comp._pos = {
+        x: ent.x,
+        y: ent.y + slotY + 10
+      };
+    });
+    svg.appendChild(group);
+  });
+  const padding = 50;
+  svg.setAttribute("viewBox", `${minX - padding} ${minY - padding} ${maxX - minX + 2 * padding} ${maxY - minY + 2 * padding}`);
+  svg.style.width = "100%";
+  svg.style.height = "100vh";
+  function getEntityPos(entityId) {
+    const ent = entities.find((e) => e.id === entityId);
+    return ent ? { x: ent.x, y: ent.y } : null;
+  }
+  entities.forEach((ent) => {
+    ent.components.forEach((comp) => {
+      comp.linksTo.forEach((targetId) => {
+        const from = comp._pos, to = getEntityPos(targetId);
+        if (!from || !to)
+          return;
+        const offset = 10, startX = from.x, startY = from.y + offset, endX = to.x, endY = to.y - offset, ctrlX = (startX + endX) / 2, ctrlY = (startY + endY) / 2 - 40, path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", `M ${startX} ${startY} Q ${ctrlX} ${ctrlY} ${endX} ${endY}`);
+        path.setAttribute("class", "arrow");
+        const color = colorMap[comp.name] || "#666";
+        path.setAttribute("stroke", color);
+        path.setAttribute("marker-end", `url(#arrowhead-${comp.name})`);
+        svg.appendChild(path);
+      });
+    });
+  });
+})('#diagram', diagramData);
+</script>
+</body>
+</html>

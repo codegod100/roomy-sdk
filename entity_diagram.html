@@ -44,201 +44,29 @@
 </head>
 <body>
 <svg id="diagram"></svg>
-<script>
-const svg = document.getElementById('diagram');
+<script type="module">
+import { buildRawEntities, generateDiagramData, drawEcsDiagram } from './ecsDiagram.js';
 
-// Define arrowhead markers with different colors
-const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-const colorMap = {
-  'Channels': '#2196f3',
-  'SidebarItems': '#009688',
-  'Threads': '#ff9800',
-  'Timeline': '#9c27b0',
-  'ReplyTo': '#f44336',
-  'Images': '#4caf50',
-};
-
-Object.entries(colorMap).forEach(([key, color]) => {
-  const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
-  marker.setAttribute("id", `arrowhead-${key}`);
-  marker.setAttribute("markerWidth", "10");
-  marker.setAttribute("markerHeight", "7");
-  marker.setAttribute("refX", "10");
-  marker.setAttribute("refY", "3.5");
-  marker.setAttribute("orient", "auto");
-  marker.setAttribute("markerUnits", "strokeWidth");
-  marker.innerHTML = `<polygon points="0 0, 10 3.5, 0 7" fill="${color}" />`;
-  defs.appendChild(marker);
-});
-svg.appendChild(defs);
-
-// More spaced out ECS data
-const entities = [
-  {
-    id: 'space1',
-    label: 'Space',
-    x: 100,
-    y: 100,
-    components: [
-      { name: 'Channels', linksTo: ['channel1'] },
-      { name: 'SidebarItems', linksTo: ['category1', 'channel1'] },
-    ],
-  },
-  {
-    id: 'category1',
-    label: 'Category',
-    x: 350,
-    y: 100,
-    components: [
-      { name: 'Channels', linksTo: ['channel1'] },
-    ],
-  },
-  {
-    id: 'channel1',
-    label: 'Channel',
-    x: 650,
-    y: 100,
-    components: [
-      { name: 'Threads', linksTo: ['thread1'] },
-      { name: 'Timeline', linksTo: ['message1', 'message2'] },
-    ],
-  },
-  {
-    id: 'thread1',
-    label: 'Thread',
-    x: 950,
-    y: 100,
-    components: [
-      { name: 'Timeline', linksTo: ['message3'] },
-    ],
-  },
-  {
-    id: 'message1',
-    label: 'Message',
-    x: 500,
-    y: 350,
-    components: [
-      { name: 'ReplyTo', linksTo: [] },
-      { name: 'Images', linksTo: ['image1'] },
-    ],
-  },
-  {
-    id: 'message2',
-    label: 'Message',
-    x: 700,
-    y: 350,
-    components: [
-      { name: 'ReplyTo', linksTo: ['message1'] },
-      { name: 'Images', linksTo: [] },
-    ],
-  },
-  {
-    id: 'message3',
-    label: 'Message',
-    x: 950,
-    y: 350,
-    components: [
-      { name: 'ReplyTo', linksTo: ['message2'] },
-      { name: 'Images', linksTo: [] },
-    ],
-  },
-  {
-    id: 'image1',
-    label: 'Image',
-    x: 600,
-    y: 550,
-    components: [],
-  },
+// Provide only a list of entity types
+const entityTypes = [
+  'Space',
+  'Category',
+  'Channel',
+  'Thread',
+  'Message',
+  'Message',
+  'Message',
+  'Image',
 ];
 
-// Draw entities with component slots
-entities.forEach(ent => {
-  const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-  group.setAttribute("transform", `translate(${ent.x}, ${ent.y})`);
+// Build raw ECS entities with unique IDs and inferred components
+const rawEntities = buildRawEntities(entityTypes);
 
-  const width = 110;
-  const height = 50 + ent.components.length * 25;
+// Generate diagram data dynamically
+const diagramData = generateDiagramData(rawEntities);
 
-  const entityBox = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-  entityBox.setAttribute("x", -width/2);
-  entityBox.setAttribute("y", -height/2);
-  entityBox.setAttribute("width", width);
-  entityBox.setAttribute("height", height);
-  entityBox.setAttribute("class", "entity");
-  group.appendChild(entityBox);
-
-  const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-  label.setAttribute("class", "label");
-  label.setAttribute("x", 0);
-  label.setAttribute("y", -height/2 + 15);
-  label.textContent = ent.label;
-  group.appendChild(label);
-
-  ent.components.forEach((comp, idx) => {
-    const slotWidth = width - 20;
-    const slotHeight = 20;
-    const slotX = -slotWidth/2;
-    const slotY = -height/2 + 30 + idx * 25;
-
-    const slot = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    slot.setAttribute("x", slotX);
-    slot.setAttribute("y", slotY);
-    slot.setAttribute("width", slotWidth);
-    slot.setAttribute("height", slotHeight);
-    slot.setAttribute("class", "component-slot");
-    group.appendChild(slot);
-
-    const slotLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    slotLabel.setAttribute("class", "label");
-    slotLabel.setAttribute("x", 0);
-    slotLabel.setAttribute("y", slotY + slotHeight/2);
-    slotLabel.textContent = comp.name;
-    group.appendChild(slotLabel);
-
-    comp._pos = {
-      x: ent.x,
-      y: ent.y + slotY + slotHeight/2
-    };
-  });
-
-  svg.appendChild(group);
-});
-
-// Helper to get entity center
-function getEntityPos(entityId) {
-  const ent = entities.find(e => e.id === entityId);
-  return ent ? { x: ent.x, y: ent.y } : null;
-}
-
-// Draw colored curved arrows for component links
-entities.forEach(ent => {
-  ent.components.forEach(comp => {
-    comp.linksTo.forEach(targetId => {
-      const from = comp._pos;
-      const to = getEntityPos(targetId);
-      if (!from || !to) return;
-
-      const offset = 10;
-      const startX = from.x;
-      const startY = from.y + offset;
-      const endX = to.x;
-      const endY = to.y - offset;
-
-      const ctrlX = (startX + endX) / 2;
-      const ctrlY = (startY + endY) / 2 - 40;
-
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.setAttribute("d", `M ${startX} ${startY} Q ${ctrlX} ${ctrlY} ${endX} ${endY}`);
-      path.setAttribute("class", "arrow");
-
-      const color = colorMap[comp.name] || '#666';
-      path.setAttribute("stroke", color);
-      path.setAttribute("marker-end", `url(#arrowhead-${comp.name})`);
-
-      svg.appendChild(path);
-    });
-  });
-});
+// Draw the diagram
+drawEcsDiagram('#diagram', diagramData);
 </script>
 </body>
 </html>

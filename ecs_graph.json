@@ -1,0 +1,263 @@
+{
+  "entities": [
+    {
+      "name": "HasPeer",
+      "components": [],
+      "links": []
+    },
+    {
+      "name": "EntityWrapper",
+      "components": [],
+      "links": []
+    },
+    {
+      "name": "Deletable",
+      "components": [
+        {
+          "name": "SoftDeleted",
+          "referencesEntity": false
+        }
+      ],
+      "links": []
+    },
+    {
+      "name": "Administered",
+      "components": [
+        {
+          "name": "Admins",
+          "referencesEntity": false
+        }
+      ],
+      "links": []
+    },
+    {
+      "name": "NamedEntity",
+      "components": [
+        {
+          "name": "BasicMeta",
+          "referencesEntity": true
+        },
+        {
+          "name": "Handles",
+          "referencesEntity": false
+        }
+      ],
+      "links": [
+        "BasicMeta"
+      ]
+    },
+    {
+      "name": "EntityList",
+      "components": [],
+      "links": []
+    },
+    {
+      "name": "Content",
+      "components": [
+        {
+          "name": "Content",
+          "referencesEntity": false
+        },
+        {
+          "name": "JsonContent",
+          "referencesEntity": false
+        }
+      ],
+      "links": []
+    },
+    {
+      "name": "Roomy",
+      "components": [
+        {
+          "name": "Spaces",
+          "referencesEntity": true
+        }
+      ],
+      "links": [
+        "Spaces"
+      ]
+    },
+    {
+      "name": "Space",
+      "components": [
+        {
+          "name": "Channels",
+          "referencesEntity": true
+        },
+        {
+          "name": "Threads",
+          "referencesEntity": true
+        },
+        {
+          "name": "WikiPages",
+          "referencesEntity": true
+        }
+      ],
+      "links": [
+        "Channels",
+        "Threads",
+        "WikiPages"
+      ]
+    },
+    {
+      "name": "Category",
+      "components": [
+        {
+          "name": "Channels",
+          "referencesEntity": true
+        },
+        {
+          "name": "Category",
+          "referencesEntity": false
+        }
+      ],
+      "links": [
+        "Channels"
+      ]
+    },
+    {
+      "name": "WikiPage",
+      "components": [
+        {
+          "name": "Content",
+          "referencesEntity": false
+        },
+        {
+          "name": "JsonContent",
+          "referencesEntity": false
+        },
+        {
+          "name": "WikiPage",
+          "referencesEntity": true
+        }
+      ],
+      "links": [
+        "WikiPage"
+      ]
+    },
+    {
+      "name": "Timeline",
+      "components": [
+        {
+          "name": "Timeline",
+          "referencesEntity": true
+        }
+      ],
+      "links": [
+        "Timeline"
+      ]
+    },
+    {
+      "name": "Channel",
+      "components": [
+        {
+          "name": "Threads",
+          "referencesEntity": true
+        },
+        {
+          "name": "WikiPages",
+          "referencesEntity": true
+        },
+        {
+          "name": "Channel",
+          "referencesEntity": false
+        }
+      ],
+      "links": [
+        "Threads",
+        "WikiPages"
+      ]
+    },
+    {
+      "name": "Thread",
+      "components": [
+        {
+          "name": "Thread",
+          "referencesEntity": false
+        }
+      ],
+      "links": []
+    },
+    {
+      "name": "TimelineItem",
+      "components": [
+        {
+          "name": "ReplyTo",
+          "referencesEntity": true
+        }
+      ],
+      "links": [
+        "ReplyTo"
+      ]
+    },
+    {
+      "name": "Reactions",
+      "components": [
+        {
+          "name": "Reactions",
+          "referencesEntity": false
+        }
+      ],
+      "links": []
+    },
+    {
+      "name": "Message",
+      "components": [
+        {
+          "name": "Images",
+          "referencesEntity": true
+        },
+        {
+          "name": "AuthorUris",
+          "referencesEntity": false
+        },
+        {
+          "name": "Content",
+          "referencesEntity": false
+        },
+        {
+          "name": "JsonContent",
+          "referencesEntity": false
+        },
+        {
+          "name": "Message",
+          "referencesEntity": false
+        }
+      ],
+      "links": [
+        "Images"
+      ]
+    },
+    {
+      "name": "Announcement",
+      "components": [
+        {
+          "name": "Threads",
+          "referencesEntity": true
+        },
+        {
+          "name": "Timeline",
+          "referencesEntity": true
+        },
+        {
+          "name": "ChannelAnnouncement",
+          "referencesEntity": false
+        }
+      ],
+      "links": [
+        "Threads",
+        "Timeline"
+      ]
+    },
+    {
+      "name": "Image",
+      "components": [
+        {
+          "name": "ImageUri",
+          "referencesEntity": false
+        }
+      ],
+      "links": []
+    }
+  ]
+}
